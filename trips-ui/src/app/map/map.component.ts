@@ -43,7 +43,7 @@ export class MapComponent implements OnInit {
     });
   }
 
-  resumeNavigation() {
+  followCar() {
     this.moveOnLiveUpdates = true;
 
     this.map.flyTo({
