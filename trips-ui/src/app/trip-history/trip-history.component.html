@@ -1,0 +1,9 @@
+<div class="trip-container">
+    <div *ngFor="let trip of trips"
+        class="trip"
+        routerLink="/live"
+        [queryParams]="{tripId: trip.tripId}"
+        >
+        {{trip.tripName}}
+    </div>
+</div>
