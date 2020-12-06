@@ -1,6 +1,7 @@
 This project implements a car tracking application consiting of two parts, trips-ui which is the front end of the application and trips-service for the backend.
 
 Start trips-service by reading it's [README](trips-service/README.md)
+
 Start trips-ui by performing `ng serve --open` and then open http://localhost:4200/ in your browser
 
 Features:
