@@ -71,6 +71,7 @@ export class MapComponent implements OnInit {
   socket = null;
   tripId = null;
 
+  // TODO race condition between map loading and socket connecting and getting more data
 
   constructor() { }
 
