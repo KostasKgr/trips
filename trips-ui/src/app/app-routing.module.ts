@@ -5,6 +5,7 @@ import { TripHistoryComponent } from './trip-history/trip-history.component';
 
 const routes: Routes = [
   { path: 'trips', component: TripHistoryComponent },
+  { path: 'replay', component: MapComponent },
   { path: 'live', component: MapComponent },
   {path: '', redirectTo: '/live', pathMatch: 'full'},
 ];

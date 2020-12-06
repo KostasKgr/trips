@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-
+import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-trip-history',
   templateUrl: './trip-history.component.html',
@@ -13,7 +13,7 @@ export class TripHistoryComponent implements OnInit {
 
   ngOnInit(): void {
 
-    fetch("http://localhost:5001/trips")
+    fetch(environment.tripsServiceUrl + "/trips")
       .then(response => response.json())
       .then(data => { this.trips = data.trips; console.log(this.trips); });
 

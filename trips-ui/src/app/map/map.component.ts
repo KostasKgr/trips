@@ -1,7 +1,8 @@
-import { Component, OnInit, ɵCompiler_compileModuleSync__POST_R3__ } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import * as mapboxgl from 'mapbox-gl';
 import io from 'socket.io-client';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-map',
@@ -19,7 +20,7 @@ export class MapComponent implements OnInit {
   tripId = null;
 
   // TODO race condition between map loading and socket connecting and getting more data
-  // TODO if you click live after you have gone to a past trip, the navigation does not start over
+
   constructor(private route: ActivatedRoute) {
 
     this.route.queryParams.subscribe(params => {
@@ -99,7 +100,7 @@ export class MapComponent implements OnInit {
     this.tripId = data.tripId;
     
     var startingPosition = this.routeCoordinates[this.routeCoordinates.length - 1];
-    mapboxgl.accessToken = 'pk.eyJ1Ijoia29zdGFza2dyIiwiYSI6ImNraWF1bGw1bjBzeDcyc2xidmJ5NHA5NDkifQ.txJo3lqZ7Pw8jHVfZUTN2g'
+    mapboxgl.accessToken = environment.mapbox.accessToken;
     this.map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/streets-v11',
@@ -158,7 +159,7 @@ export class MapComponent implements OnInit {
   ngOnInit(): void {
 
     // TODO make server configurable
-    this.socket = io('http://localhost:5001', { transports: ['websocket']});
+    this.socket = io(environment.tripsServiceUrl, { transports: ['websocket']});
     this.socket.on("connect", (socket) => this.onConnection(socket));
     this.socket.on("navigationInit", (data) => this.onNavigationInit(data));
     this.socket.on("positionUpdates", (data) => this.onPositionUpdates(data));
