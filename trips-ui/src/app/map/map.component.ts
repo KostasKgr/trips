@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ɵCompiler_compileModuleSync__POST_R3__ } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
 import io from 'socket.io-client';
 
@@ -64,10 +64,12 @@ export class MapComponent implements OnInit {
       }
     ]
   }
+  // TODO update to work with dynamic data
   routeCoordinates = this.data.features[0].geometry.coordinates[0];
   moveOnLiveUpdates = true;
   currentPosition = null;
   socket = null;
+  tripId = null;
 
 
   constructor() { }
@@ -92,12 +94,8 @@ export class MapComponent implements OnInit {
     });    
   }
 
-  fly() {
-    const coordinatesList = this.data.features[0].geometry.coordinates[0];
-    const index = Math.floor(Math.random() * coordinatesList.length);
-    this.currentPosition = coordinatesList[index]
-
-    console.log("Received live update for " + index, this.currentPosition);
+  fly(coordinates) {
+    this.currentPosition = coordinates
 
     this.map.getSource('point').setData({
       'type': 'Point',
@@ -120,12 +118,84 @@ export class MapComponent implements OnInit {
     this.socket.emit('startNavigation', {data: 'I\'m connected!'});
 
     // TODO continue navigation
-    // this.socket.emit('continueNavigation', {journeyId: ... , lastPositionIndex: ...});
+    // this.socket.emit('continueNavigation', {tripId: ... , lastPositionIndex: ...});
+  }
+
+  onPositionUpdates(data): void {
+    const newPositions = data.positions;
+    this.routeCoordinates.push(...newPositions);
+
+    console.log("New positions received:", data);
+
+    this.map.getSource('route').setData(this.data);
+
+    this.fly(this.routeCoordinates[this.routeCoordinates.length - 1]);
   }
 
   onNavigationInit(data): void {
     console.log("Initializing navigation", data)
-    // TODO initialize position on map (and map?)
+
+    // TODO add loader while the connection is established in the beginning
+
+    this.data = data.geoJson;
+    this.routeCoordinates = this.data.features[0].geometry.coordinates[0];
+    this.tripId = data.tripId;
+    
+    var startingPosition = this.routeCoordinates[this.routeCoordinates.length - 1];
+    mapboxgl.accessToken = 'pk.eyJ1Ijoia29zdGFza2dyIiwiYSI6ImNraWF1bGw1bjBzeDcyc2xidmJ5NHA5NDkifQ.txJo3lqZ7Pw8jHVfZUTN2g'
+    this.map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/streets-v11',
+      zoom: 15,
+      center: startingPosition
+    });
+
+
+    this.map.addControl(new mapboxgl.NavigationControl());
+
+    
+
+
+    this.map.on('load', () => {
+
+      // https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/
+      this.map.addSource('route', {
+        'type': 'geojson',
+        'data': this.data
+      });
+
+      this.map.addLayer({
+        'id': 'route',
+        'type': 'line',
+        'source': 'route',
+        'layout': {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        'paint': {
+          'line-color': '#0c8ced',
+          'line-width': 4
+        }
+      });
+
+
+      this.map.addSource('point', {
+        'type': 'geojson',
+        'data': {
+          'type': 'Point',
+          'coordinates': startingPosition} 
+        });
+
+      this.map.addLayer({
+        'id': 'point',
+        'source': 'point',
+        'type': 'circle',
+        'paint': {
+          'circle-radius': 8,
+          'circle-color': '#007cbf'
+        }
+      });
+    });    
   }
 
   ngOnInit(): void {
@@ -133,6 +203,7 @@ export class MapComponent implements OnInit {
     this.socket = io('http://localhost:5001', { transports: ['websocket']});
     this.socket.on("connect", (socket) => this.onConnection(socket));
     this.socket.on("navigationInit", (data) => this.onNavigationInit(data));
+    this.socket.on("positionUpdates", (data) => this.onPositionUpdates(data));
     return
 
     // TODO import { environment } from '../../../environments/environment';
@@ -188,10 +259,10 @@ export class MapComponent implements OnInit {
         }
       });
 
-      window.setInterval(() => {
-        this.fly()
+      // window.setInterval(() => {
+      //   this.fly()
 
-      }, 5000);
+      // }, 5000);
     });
   }
 }
