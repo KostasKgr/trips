@@ -2,8 +2,13 @@ from flask_socketio import SocketIO, send, emit
 from flask import Flask, request
 import json
 import copy
+import random
+import appconfig
 
 app = Flask(__name__)
+app.config.from_object('appconfig.Config')
+
+
 socketio = SocketIO(app, cors_allowed_origins='*')
 
 active_navigations = {}
@@ -74,32 +79,42 @@ def disconnect_web():
 def startNavigation(data):
     print(request.sid, '[INFO] Received startNavigation: ', data)
 
-    navigation_init_data = trips[0].get_start_navigation()
+    trip_id = random.randint(0, len(trips) - 1)
+    trip_id = 1
 
+
+    navigation_init_data = trips[trip_id].get_start_navigation()
     emit('navigationInit', navigation_init_data)
-    # TODO random pick on trip_id
-    add_navigation(request.sid, trip_id=0)
+
+    add_navigation(request.sid, trip_id=trip_id)
+
+
+
+def simulation_delay():
+    min = app.config["SIMULATION_DELAY_SECONDS_MINIMUM"]
+    max = app.config["SIMULATION_DELAY_SECONDS_MAXIMUM"]
+
+    delay = random.uniform(min, max)
+
+    socketio.sleep(delay)
 
 
 
 
 def simulate_location_updates():
-    # TODO load from a file
-    positions = trips[0].coordinates
-
     print("Started simulation thread")
     while True:
-        # TODO make time configurable and random in a range
-        socketio.sleep(1)
-
+        simulation_delay()
         print("Simulating updates for navigation clients")
 
         # Send updates to active navigations
         for sid, navigation in active_navigations.items():
-            trip_id = navigation['trip']
-            positions = 
+            trip_id = navigation['trip_id']
+            trip = trips[trip_id]
+
+            positions = trip.coordinates
             next_position = navigation['position'] + 1
-            # TODO Check on positions based on journey
+
             if next_position >= len(positions):
                 # We shouldn't normally get here if navigation has ended, it will be handled later
                 navigation['finished'] = True
