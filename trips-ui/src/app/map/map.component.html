@@ -1,0 +1,20 @@
+<div class="navigation-content">
+    <div class="map-container">
+        <div class="map" id="map"></div>
+    </div>
+
+    <div>
+        <button (click)="resumeNavigation()"
+            class="card card-small" style="background-color: rgb(166, 197, 226);">
+            Resume navigation
+        </button>
+
+        <div class="card-container">
+            <div *ngFor="let coordinates of routeCoordinates"
+                class="card card-small"
+                (click)="focus(coordinates)">
+                {{coordinates}}
+            </div>
+        </div>
+    </div>
+</div>
