@@ -65,6 +65,15 @@ def healthcheck():
     return { "status": "up"}
 
 
+@app.route('/trips')
+def get_trips():
+    trips_summary =  [{ "tripId": trip.id, "tripName": trip.name } for trip in trips]
+    return {
+        "trips": trips_summary
+    }
+
+
+
 @socketio.on('connect')
 def connect_web():
     print('[INFO] Web client connected', request.sid, "on", request.namespace)
@@ -80,8 +89,7 @@ def startNavigation(data):
     print(request.sid, '[INFO] Received startNavigation: ', data)
 
     trip_id = random.randint(0, len(trips) - 1)
-    trip_id = 1
-
+    # TODO Allow for a specific trip to be provided, for historical trips
 
     navigation_init_data = trips[trip_id].get_start_navigation()
     emit('navigationInit', navigation_init_data)
