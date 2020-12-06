@@ -1,4 +1,5 @@
 import { Component, OnInit, ɵCompiler_compileModuleSync__POST_R3__ } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import * as mapboxgl from 'mapbox-gl';
 import io from 'socket.io-client';
 
@@ -10,70 +11,25 @@ import io from 'socket.io-client';
 export class MapComponent implements OnInit {
 
   map: mapboxgl.Map;
-  data = {
-    "type": "FeatureCollection",
-    "features": [
-      {
-        "type": "Feature",
-        "properties": {
-          "name": "Ayiou Athanasiou 28, Agios Athanasios 4102, Cyprus to Arrivals 5, Larnaca, Cyprus"
-        },
-        "geometry": {
-          "type": "MultiLineString",
-          "coordinates": [
-            [
-              [
-                33.05986,
-                34.70234
-              ],
-              [
-                33.05992,
-                34.70278
-              ],
-              [
-                33.06029,
-                34.70428
-              ],
-              [
-                33.0606,
-                34.70559
-              ],
-              [
-                33.06076,
-                34.70634
-              ],
-              [
-                33.0607,
-                34.70665
-              ],
-              [
-                33.06041,
-                34.70688
-              ],
-              [
-                33.06036,
-                34.70707
-              ],
-              [
-                33.06042,
-                34.70726
-              ]
-            ]
-          ]
-        }
-      }
-    ]
-  }
-  // TODO update to work with dynamic data
-  routeCoordinates = this.data.features[0].geometry.coordinates[0];
+  data = null;
+  routeCoordinates = [];
   moveOnLiveUpdates = true;
   currentPosition = null;
   socket = null;
   tripId = null;
 
   // TODO race condition between map loading and socket connecting and getting more data
+  // TODO if you click live after you have gone to a past trip, the navigation does not start over
+  constructor(private route: ActivatedRoute) {
 
-  constructor() { }
+    this.route.queryParams.subscribe(params => {
+      console.log("Params", params)
+      this.tripId = 'tripId' in params ? params['tripId'] : null;
+      console.log("Trip id", this.tripId)
+  });
+
+
+  }
 
   focus(coordinates) {
     // User focuses on a past position, we disable moving to new positions
@@ -116,7 +72,7 @@ export class MapComponent implements OnInit {
 
   onConnection(socket): void {
     console.log("Connected", this.socket)
-    this.socket.emit('startNavigation', {data: 'I\'m connected!'});
+    this.socket.emit('startNavigation', {tripId: this.tripId});
 
     // TODO continue navigation
     // this.socket.emit('continueNavigation', {tripId: ... , lastPositionIndex: ...});
@@ -200,6 +156,7 @@ export class MapComponent implements OnInit {
   }
 
   ngOnInit(): void {
+
     // TODO make server configurable
     this.socket = io('http://localhost:5001', { transports: ['websocket']});
     this.socket.on("connect", (socket) => this.onConnection(socket));

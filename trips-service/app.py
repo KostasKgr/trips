@@ -90,8 +90,12 @@ def disconnect_web():
 def startNavigation(data):
     print(request.sid, '[INFO] Received startNavigation: ', data)
 
-    trip_id = random.randint(0, len(trips) - 1)
-    # TODO Allow for a specific trip to be provided, for historical trips
+    if data.get('tripId', None) is None:
+        # Live navigation simulation, pick a random trip
+        trip_id = random.randint(0, len(trips) - 1)
+    else:
+        # Use an specific trip for navigation
+        trip_id = int(data.get('tripId'))
 
     navigation_init_data = trips[trip_id].get_start_navigation()
     emit('navigationInit', navigation_init_data)
