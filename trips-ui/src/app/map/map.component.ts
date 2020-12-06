@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as mapboxgl from 'mapbox-gl';
+import io from 'socket.io-client';
 
 @Component({
   selector: 'app-map',
@@ -66,6 +67,7 @@ export class MapComponent implements OnInit {
   routeCoordinates = this.data.features[0].geometry.coordinates[0];
   moveOnLiveUpdates = true;
   currentPosition = null;
+  socket = null;
 
 
   constructor() { }
@@ -113,7 +115,25 @@ export class MapComponent implements OnInit {
 
   }
 
+  onConnection(socket): void {
+    console.log("Connected", this.socket)
+    this.socket.emit('startNavigation', {data: 'I\'m connected!'});
+
+    // TODO continue navigation
+    // this.socket.emit('continueNavigation', {journeyId: ... , lastPositionIndex: ...});
+  }
+
+  onNavigationInit(data): void {
+    console.log("Initializing navigation", data)
+    // TODO initialize position on map (and map?)
+  }
+
   ngOnInit(): void {
+    // TODO make server configurable
+    this.socket = io('http://localhost:5001', { transports: ['websocket']});
+    this.socket.on("connect", (socket) => this.onConnection(socket));
+    this.socket.on("navigationInit", (data) => this.onNavigationInit(data));
+    return
 
     // TODO import { environment } from '../../../environments/environment';
     // TODO mapboxgl.accessToken = environment.mapbox.accessToken;
@@ -157,16 +177,16 @@ export class MapComponent implements OnInit {
           'type': 'Point',
           'coordinates': startingPosition} 
         });
-         
-        this.map.addLayer({
+
+      this.map.addLayer({
         'id': 'point',
         'source': 'point',
         'type': 'circle',
         'paint': {
-        'circle-radius': 8,
-        'circle-color': '#007cbf'
+          'circle-radius': 8,
+          'circle-color': '#007cbf'
         }
-        });
+      });
 
       window.setInterval(() => {
         this.fly()
