@@ -152,5 +152,5 @@ if __name__ == "__main__":
     load_trips()
     print('[INFO] Starting server at http://localhost:5001')
     socketio.start_background_task(simulate_location_updates)
-    # TODO Background tasks do not work with reloader https://github.com/miguelgrinberg/Flask-SocketIO/issues/617
+    # Background tasks do not work with reloader https://github.com/miguelgrinberg/Flask-SocketIO/issues/617
     socketio.run(app=app, host='0.0.0.0', port=5001, use_reloader=False, debug=True)

@@ -157,71 +157,9 @@ export class MapComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
-    // TODO make server configurable
     this.socket = io(environment.tripsServiceUrl, { transports: ['websocket']});
     this.socket.on("connect", (socket) => this.onConnection(socket));
     this.socket.on("navigationInit", (data) => this.onNavigationInit(data));
     this.socket.on("positionUpdates", (data) => this.onPositionUpdates(data));
-    return
-
-    // TODO import { environment } from '../../../environments/environment';
-    // TODO mapboxgl.accessToken = environment.mapbox.accessToken;
-    var startingPosition = [33.05986, 34.70234];
-    mapboxgl.accessToken = 'pk.eyJ1Ijoia29zdGFza2dyIiwiYSI6ImNraWF1bGw1bjBzeDcyc2xidmJ5NHA5NDkifQ.txJo3lqZ7Pw8jHVfZUTN2g'
-    this.map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      zoom: 15,
-      center: startingPosition
-    });
-
-    this.map.addControl(new mapboxgl.NavigationControl());
-
-    this.map.on('load', () => {
-
-      // https://docs.mapbox.com/mapbox-gl-js/example/geojson-line/
-      this.map.addSource('route', {
-        'type': 'geojson',
-        'data': this.data
-      });
-
-      this.map.addLayer({
-        'id': 'route',
-        'type': 'line',
-        'source': 'route',
-        'layout': {
-          'line-join': 'round',
-          'line-cap': 'round'
-        },
-        'paint': {
-          'line-color': '#0c8ced',
-          'line-width': 4
-        }
-      });
-
-
-      this.map.addSource('point', {
-        'type': 'geojson',
-        'data': {
-          'type': 'Point',
-          'coordinates': startingPosition} 
-        });
-
-      this.map.addLayer({
-        'id': 'point',
-        'source': 'point',
-        'type': 'circle',
-        'paint': {
-          'circle-radius': 8,
-          'circle-color': '#007cbf'
-        }
-      });
-
-      // window.setInterval(() => {
-      //   this.fly()
-
-      // }, 5000);
-    });
   }
 }
