@@ -10,7 +10,7 @@ pip install -r requirements.txt
 Start the server, listens to port 5001:
 
 ```
-python3 app.py
+python app.py
 ```
 
 

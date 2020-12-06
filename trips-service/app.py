@@ -83,8 +83,8 @@ def connect_web():
 
 @socketio.on('disconnect')
 def disconnect_web():
-    # TODO remove if disconnected
     print('[INFO] Web client disconnected', request.sid, "from", request.namespace)
+    remove_navigation(request.sid)
 
 @socketio.on('startNavigation')
 def startNavigation(data):
