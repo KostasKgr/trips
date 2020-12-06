@@ -39,9 +39,9 @@ class Trip:
 
 
 
-def add_navigation(sid, trip_id):
+def add_navigation(sid, trip_id, position=0):
     print(f"Adding client {sid} to active navigations")
-    active_navigations[sid] = { "trip_id": trip_id, "position": 0 }
+    active_navigations[sid] = { "trip_id": trip_id, "position": position }
 
 def remove_navigation(sid):
     if sid in active_navigations:
@@ -87,7 +87,7 @@ def disconnect_web():
     remove_navigation(request.sid)
 
 @socketio.on('startNavigation')
-def startNavigation(data):
+def start_navigation(data):
     print(request.sid, '[INFO] Received startNavigation: ', data)
 
     if data.get('tripId', None) is None:
@@ -102,6 +102,12 @@ def startNavigation(data):
 
     add_navigation(request.sid, trip_id=trip_id)
 
+
+
+@socketio.on('resumeNavigation')
+def resume_navigation(data):
+    print(request.sid, '[INFO] Received resumeNavigation: ', data)
+    add_navigation(request.sid, trip_id=data['tripId'], position=data['lastPositionIndex'])
 
 
 def simulation_delay():

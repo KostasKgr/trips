@@ -13,7 +13,7 @@ export class MapComponent implements OnInit {
 
   map: mapboxgl.Map;
   data = null;
-  routeCoordinates = [];
+  routeCoordinates = null;
   moveOnLiveUpdates = true;
   currentPosition = null;
   socket = null;
@@ -73,10 +73,14 @@ export class MapComponent implements OnInit {
 
   onConnection(socket): void {
     console.log("Connected", this.socket)
-    this.socket.emit('startNavigation', {tripId: this.tripId});
 
-    // TODO continue navigation
-    // this.socket.emit('continueNavigation', {tripId: ... , lastPositionIndex: ...});
+    if (this.routeCoordinates == null) {
+      // If we don't have any data yet then start a new navigation
+      this.socket.emit('startNavigation', {tripId: this.tripId});
+    } else {
+      // We already have some navigational data, ask to resume navigation
+      this.socket.emit('resumeNavigation', {tripId: this.tripId , lastPositionIndex: this.routeCoordinates.length - 1});
+    }
   }
 
   onPositionUpdates(data): void {
