@@ -1,11 +1,13 @@
 from flask_socketio import SocketIO, send, emit
 from flask import Flask, request
+from flask_cors import CORS
 import json
 import copy
 import random
 import appconfig
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_object('appconfig.Config')
 
 
